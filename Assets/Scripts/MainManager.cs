@@ -1,8 +1,11 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.IO;
+using System.Diagnostics;
 
 public class MainManager : MonoBehaviour
 {
@@ -21,7 +24,7 @@ public class MainManager : MonoBehaviour
     
     private bool m_GameOver = false;
 
-    public static int bestScore;
+    public static int bestPoint;
     // public static MainManager Instance;
     // public int bestScoreForInstance;
 
@@ -34,7 +37,7 @@ public class MainManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
 
-        BestScoreText.text = "Best Score: " + bestScore + " Name: " + bestPlayerName;
+        BestScoreText.text = "Best Score: " + bestPoint + " Name: " + bestPlayerName;
 
         MenuButton.onClick.AddListener(BackToMenu);
         // ==================================================
@@ -62,7 +65,7 @@ public class MainManager : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 m_Started = true;
-                float randomDirection = Random.Range(-1.0f, 1.0f);
+                float randomDirection = UnityEngine.Random.Range(-1.0f, 1.0f);
                 Vector3 forceDir = new Vector3(randomDirection, 1, 0);
                 forceDir.Normalize();
 
@@ -72,9 +75,9 @@ public class MainManager : MonoBehaviour
         }
         else if (m_GameOver)
         {
-            if (bestScore < m_Points)
+            if (bestPoint < m_Points)
             {
-                bestScore = m_Points;
+                bestPoint = m_Points;
                 bestPlayerName = MenuManager.playerName;
             }
 
@@ -112,5 +115,41 @@ public class MainManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+    }
+
+    [Serializable]
+    public class SaveData
+    {
+        public string bestPlayerName = MainManager.bestPlayerName;
+        public int bestPoint = MainManager.bestPoint;
+    }
+
+    public static void SaveScore()
+    {
+        string path = Application.persistentDataPath + "/saveFile.json";
+        string json = JsonUtility.ToJson(new SaveData());
+
+        File.WriteAllText(path, json);
+    }
+
+    public static SaveData LoadScore()
+    {
+        try
+        {
+            string path = Application.persistentDataPath + "/saveFile.json";
+            string json = File.ReadAllText(path);
+
+            SaveData data = JsonUtility.FromJson<SaveData>(json);
+
+            return data;
+        } catch (FileNotFoundException)
+        {
+            SaveData result = new SaveData();
+            result.bestPlayerName = "";
+            result.bestPoint = 0;
+
+            return result;
+        }
+          
     }
 }

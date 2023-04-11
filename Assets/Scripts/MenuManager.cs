@@ -18,7 +18,8 @@ public class MenuManager : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
-        bestScoreText.text = "Best Score: " + MainManager.bestScore + " Name: " + MainManager.bestPlayerName;
+        GetBestScore();
+
         startButton.onClick.AddListener(StartGame);
         quitButton.onClick.AddListener(QuitGame);
     }
@@ -31,11 +32,30 @@ public class MenuManager : MonoBehaviour
 
     void QuitGame()
     {
+        MainManager.SaveScore();
+
 #if UNITY_STANDALONE
         Application.Quit();
 #endif
 #if UNITY_EDITOR
         EditorApplication.ExitPlaymode();
 #endif
+    }
+
+    void GetBestScore()
+    {
+        MainManager.SaveData savedBestScore = MainManager.LoadScore();
+
+        if (savedBestScore.bestPoint < MainManager.bestPoint)
+        {
+            bestScoreText.text = "Best Score: " + MainManager.bestPoint + " Name: " + MainManager.bestPlayerName;
+        } else
+        {
+            MainManager.bestPoint = savedBestScore.bestPoint;
+            MainManager.bestPlayerName = savedBestScore.bestPlayerName;
+
+            bestScoreText.text = "Best Score: " + savedBestScore.bestPoint + " Name: " + savedBestScore.bestPlayerName;
+        }
+        
     }
 }
